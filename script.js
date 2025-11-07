@@ -64,83 +64,95 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // Intersection Observer for sections
   const sections = document.querySelectorAll("section");
+  if (sections.length > 0) {
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add("visible");
+        } else {
+          entry.target.classList.remove("visible");
+        }
+      });
+    }, { threshold: 0.15 });
 
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        entry.target.classList.add("visible");
-      } else {
-        entry.target.classList.remove("visible");
-      }
-    });
-  }, { threshold: 0.15 });
-
-  sections.forEach(section => observer.observe(section));
+    sections.forEach(section => observer.observe(section));
+  }
 
   // Cookie Banner (in-memory storage)
   const cookieBanner = document.getElementById("cookie-banner");
   const acceptBtn = document.getElementById("accept-cookies");
 
-  // Show banner
   if (cookieBanner && acceptBtn) {
     cookieBanner.style.display = "flex";
 
-    // Handle accept button click
     acceptBtn.addEventListener("click", () => {
       console.log("Accept button clicked!");
       cookieBanner.style.display = "none";
     });
   }
 
-}); 
-
-
+  // Contact Form
   const form = document.getElementById('contactForm');
+  if (form) {
+    form.addEventListener('submit', function (event) {
+      event.preventDefault(); 
 
-  form.addEventListener('submit', function (event) {
-    event.preventDefault(); 
+      const formData = new FormData(form);
+      const action = form.getAttribute('action');
 
-    const formData = new FormData(form);
-    const action = form.getAttribute('action');
-
-    fetch(action, {
-      method: 'POST',
-      body: formData,
-      headers: {
-        'Accept': 'application/json'
-      }
-    }).then(response => {
-      if (response.ok) {
-        alert('Thanks for your message! I’ll get back to you soon.');
-        form.reset(); 
-      } else {
-        alert('Oops! There was a problem submitting your form.');
-      }
-    }).catch(() => {
-      alert('Something went wrong. Please try again.');
+      fetch(action, {
+        method: 'POST',
+        body: formData,
+        headers: {
+          'Accept': 'application/json'
+        }
+      }).then(response => {
+        if (response.ok) {
+          alert('Thanks for your message! I\'ll get back to you soon.');
+          form.reset(); 
+        } else {
+          alert('Oops! There was a problem submitting your form.');
+        }
+      }).catch(() => {
+        alert('Something went wrong. Please try again.');
+      });
     });
+  }
+
+  // ========== CHATBOT ==========
+  const chatButton = document.getElementById('chatButton');
+  const chatWindow = document.getElementById('chatWindow');
+  const chatClose = document.getElementById('chatClose');
+  const chatMessages = document.getElementById('chatMessages');
+  const chatInput = document.getElementById('chatInput');
+  const chatSend = document.getElementById('chatSend');
+  const quickQuestions = document.querySelectorAll('.quick-question');
+
+  console.log('Chatbot elements:', {
+    chatButton,
+    chatWindow,
+    chatClose,
+    chatMessages,
+    chatInput,
+    chatSend,
+    quickQuestionsCount: quickQuestions.length
   });
 
-  // ChatBot
-    const chatButton = document.getElementById('chatButton');
-    const chatWindow = document.getElementById('chatWindow');
-    const chatClose = document.getElementById('chatClose');
-    const chatMessages = document.getElementById('chatMessages');
-    const chatInput = document.getElementById('chatInput');
-    const chatSend = document.getElementById('chatSend');
-    const quickQuestions = document.querySelectorAll('.quick-question');
+  if (chatButton && chatWindow && chatClose && chatMessages && chatInput && chatSend) {
+    console.log('All chatbot elements found! Initializing...');
 
     // Predefined responses
     const responses = {
       'services': 'I create elegant, intuitive digital experiences—from branding and web design to mobile and UI/UX.',
       'portfolio': 'You can view my portfolio at the Portfolio page. I have projects including Good Food, Tony\'s Pizza, OleDiaEvents, and more!',
-      'contact': 'You can reach me at marianna.iatsko@gmail.com, through the Contact Me Form, or connect with me on LinkedIn—I\’d love to hear from you!',
+      'contact': 'You can reach me at marianna.iatsko@gmail.com, through the Contact Me Form, or connect with me on LinkedIn—I\'d love to hear from you!',
       'pricing': 'My rates are tailored to each project\'s scope and complexity. To receive a custom quote, please reach out with details about your goals and timeline—I\'d be happy to explore how we can collaborate.',
-      'default': 'ThatI\'s a great question! For more details, feel free to reach out directly at marianna.iatsko@gmail.com or via the Contact Me Form — I\'d love to hear from you.'
+      'default': 'That\'s a great question! For more details, feel free to reach out directly at marianna.iatsko@gmail.com or via the Contact Me Form — I\'d love to hear from you.'
     };
 
     // Toggle chat window
     chatButton.addEventListener('click', () => {
+      console.log('Chat button clicked!');
       chatWindow.classList.toggle('active');
       if (chatWindow.classList.contains('active')) {
         chatInput.focus();
@@ -148,6 +160,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     chatClose.addEventListener('click', () => {
+      console.log('Chat close clicked!');
       chatWindow.classList.remove('active');
     });
 
@@ -191,6 +204,8 @@ document.addEventListener('DOMContentLoaded', function() {
       const message = chatInput.value.trim();
       if (!message) return;
 
+      console.log('Sending message:', message);
+      
       // Add user message
       addMessage(message, true);
       chatInput.value = '';
@@ -212,15 +227,24 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Quick questions
-    quickQuestions.forEach(button => {
-      button.addEventListener('click', () => {
-        const question = button.getAttribute('data-question');
-        addMessage(question, true);
-        
-        setTimeout(() => {
-          const response = getBotResponse(question);
-          addMessage(response, false);
-        }, 500);
+    if (quickQuestions.length > 0) {
+      quickQuestions.forEach(button => {
+        button.addEventListener('click', () => {
+          const question = button.getAttribute('data-question');
+          console.log('Quick question clicked:', question);
+          addMessage(question, true);
+          
+          setTimeout(() => {
+            const response = getBotResponse(question);
+            addMessage(response, false);
+          }, 500);
+        });
       });
-    });
- 
+    }
+
+    console.log('Chatbot initialized successfully!');
+  } else {
+    console.log('Chatbot elements missing - chatbot not initialized');
+  }
+
+});
